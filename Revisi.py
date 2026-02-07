@@ -71,14 +71,7 @@ if st.session_state.data_revisi:
     df = pd.DataFrame(st.session_state.data_revisi)
     st.dataframe(df, use_container_width=True)
 
-    # =============================
-    # Export ke Excel
-    # =============================
-    def convert_excel(df):
-        return df.to_excel(index=False, engine="openpyxl")
-
-    st.download_button(
-        import io
+import io
 
 # =============================
 # Export ke Excel (FIXED)
@@ -92,7 +85,5 @@ st.download_button(
     data=output.getvalue(),
     file_name="rangkuman_revisi_proposal.xlsx",
     mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-)
-else:
-    st.info("Belum ada data revisi yang disimpan.")
+
 
