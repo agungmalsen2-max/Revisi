@@ -78,10 +78,21 @@ if st.session_state.data_revisi:
         return df.to_excel(index=False, engine="openpyxl")
 
     st.download_button(
-        label="⬇️ Download Excel",
-        data=df.to_excel(index=False),
-        file_name="rangkuman_revisi_proposal.xlsx",
-        mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-    )
+        import io
+
+# =============================
+# Export ke Excel (FIXED)
+# =============================
+output = io.BytesIO()
+with pd.ExcelWriter(output, engine="openpyxl") as writer:
+    df.to_excel(writer, index=False)
+
+st.download_button(
+    label="⬇️ Download Excel",
+    data=output.getvalue(),
+    file_name="rangkuman_revisi_proposal.xlsx",
+    mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+)
 else:
     st.info("Belum ada data revisi yang disimpan.")
+
