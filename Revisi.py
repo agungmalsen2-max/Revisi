@@ -3,24 +3,51 @@ import pandas as pd
 from datetime import datetime
 
 # =============================
-# Konfigurasi Halaman
+# KONFIGURASI HALAMAN
 # =============================
 st.set_page_config(
-    page_title="Rangkuman Revisi Proposal",
+    page_title="Sistem Revisi Proposal",
     layout="wide"
 )
 
-st.title("📑 Sistem Rangkuman Revisi Proposal")
-st.write("Aplikasi untuk mencatat revisi proposal sebelum dan sesudah serta status ACC dosen")
+# =============================
+# LOGIN GOOGLE (STREAMLIT CLOUD)
+# =============================
+user = st.experimental_user
+
+if not user or not user.email:
+    st.warning("🔐 Silakan login menggunakan akun Gmail terlebih dahulu.")
+    st.stop()
 
 # =============================
-# Inisialisasi Data
+# INFO USER
+# =============================
+st.sidebar.title("👤 Akun Login")
+st.sidebar.write(f"**Nama:** {user.name}")
+st.sidebar.write(f"**Email:** {user.email}")
+
+# =============================
+# INISIALISASI DATA
 # =============================
 if "data_revisi" not in st.session_state:
     st.session_state.data_revisi = []
 
 # =============================
-# Form Input Revisi
+# FILTER DATA PER USER
+# =============================
+data_user = [
+    d for d in st.session_state.data_revisi
+    if d["Email"] == user.email
+]
+
+# =============================
+# DASHBOARD
+# =============================
+st.title("📑 Dashboard Revisi Proposal")
+st.caption("Semua data tersimpan otomatis berdasarkan akun Gmail")
+
+# =============================
+# FORM INPUT REVISI
 # =============================
 with st.form("form_revisi"):
     st.subheader("📝 Input Revisi Proposal")
@@ -30,9 +57,9 @@ with st.form("form_revisi"):
     with col1:
         judul = st.text_input("Judul Proposal")
         mahasiswa = st.text_input("Nama Mahasiswa")
-        dosen = st.text_input("Nama Dosen Pembimbing")
 
     with col2:
+        dosen = st.text_input("Nama Dosen Pembimbing")
         status = st.selectbox(
             "Status Revisi",
             ["Belum ACC", "Revisi Lanjutan", "ACC"]
@@ -44,11 +71,13 @@ with st.form("form_revisi"):
     submit = st.form_submit_button("💾 Simpan Revisi")
 
 # =============================
-# Simpan Data
+# SIMPAN DATA
 # =============================
 if submit:
     now = datetime.now()
-    data = {
+    st.session_state.data_revisi.append({
+        "Email": user.email,
+        "Nama Akun": user.name,
         "Judul Proposal": judul,
         "Nama Mahasiswa": mahasiswa,
         "Dosen Pembimbing": dosen,
@@ -58,30 +87,16 @@ if submit:
         "Tanggal": now.strftime("%Y-%m-%d"),
         "Waktu": now.strftime("%H:%M:%S"),
         "Hari": now.strftime("%A")
-    }
-    st.session_state.data_revisi.append(data)
+    })
     st.success("✅ Revisi berhasil disimpan")
 
 # =============================
-# Tampilkan Data Revisi
+# TAMPILKAN RIWAYAT REVISI
 # =============================
-st.subheader("📊 Riwayat Revisi Proposal")
+st.subheader("📊 Riwayat Revisi Saya")
 
-if st.session_state.data_revisi:
-    df = pd.DataFrame(st.session_state.data_revisi)
+if data_user:
+    df = pd.DataFrame(data_user)
     st.dataframe(df, use_container_width=True)
-
-    # =============================
-    # Export ke Excel
-    # =============================
-    def convert_excel(df):
-        return df.to_excel(index=False, engine="openpyxl")
-
-    st.download_button(
-        label="⬇️ Download Excel",
-        data=df.to_excel(index=False),
-        file_name="rangkuman_revisi_proposal.xlsx",
-        mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-    )
 else:
-    st.info("Belum ada data revisi yang disimpan.")
+    st.info("Belum ada revisi yang tersimpan untuk akun ini.")
